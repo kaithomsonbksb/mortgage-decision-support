@@ -1,47 +1,74 @@
-"""Worked TWO-FEATURE mortgage baseline – teaching scaffold, not a final solution.
-
-Learners must explain the supplied choices, evaluate their limitations,
-implement and evidence independent development, and integrate/test rule logic.
-"""
+"""Train and evaluate the XGBoost mortgage-risk model."""
 
 from pathlib import Path
+
 import joblib
-from sklearn.dummy import DummyClassifier
-from sklearn.impute import SimpleImputer
-from sklearn.linear_model import LogisticRegression
+from sklearn.compose import ColumnTransformer
 from sklearn.metrics import (
     accuracy_score,
     confusion_matrix,
+    f1_score,
     precision_score,
     recall_score,
-    f1_score,
     roc_auc_score,
 )
 from sklearn.model_selection import train_test_split
-from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder
+from xgboost import XGBClassifier
+
 from src.data import TARGET
 
-# TUTOR SELECTED: two numeric predictors only, intentionally limited.
-BASELINE_FEATURES = ["credit_score", "debt_to_income_ratio"]
+NUMERIC_FEATURES = [
+    "credit_score",
+    "debt_to_income_ratio",
+    "missed_payments_24m",
+    "previous_default_flag",
+    "credit_utilisation_pct",
+    "employment_years",
+    "savings_gbp",
+    "annual_income_gbp",
+    "loan_to_value_pct",
+    "requested_loan_gbp",
+    "term_years",
+]
+CATEGORICAL_FEATURES = ["employment_type"]
+FEATURES = NUMERIC_FEATURES + CATEGORICAL_FEATURES
+
+# Retain this name for the scoring example's public import.
+BASELINE_FEATURES = FEATURES
 MODEL_FILE = Path(__file__).resolve().parents[1] / "models" / "baseline_model.joblib"
 
 
-def build_baseline_pipeline():
-    """Median-impute missing inputs, scale, then fit Logistic Regression."""
-    return make_pipeline(
-        SimpleImputer(strategy="median"),  # Median calculated on training data
-        StandardScaler(),  # Scaling fitted on training data
-        LogisticRegression(max_iter=1000, random_state=42),
+def build_xgb_pipeline():
+    """Return preprocessing and a reproducible first XGBoost model."""
+    preprocessor = ColumnTransformer(
+        transformers=[
+            ("numeric", "passthrough", NUMERIC_FEATURES),
+            (
+                "categorical",
+                OneHotEncoder(handle_unknown="ignore"),
+                CATEGORICAL_FEATURES,
+            ),
+        ]
+    )
+    classifier = XGBClassifier(
+        random_state=42,
+        eval_metric="logloss",
+        n_jobs=1,
+    )
+    return Pipeline(
+        steps=[
+            ("preprocessor", preprocessor),
+            ("classifier", classifier),
+        ]
     )
 
 
 def evaluate(model, X_test, y_test):
-    """Report results on held-out data; not a substitute for full evaluation."""
-    predicted = model.predict(X_test)  # 0/1 classifications at default threshold
-    scores = model.predict_proba(X_test)[
-        :, 1
-    ]  # Class-1 scores; calibration not assessed
+    """Report held-out binary classification metrics."""
+    predicted = model.predict(X_test)
+    scores = model.predict_proba(X_test)[:, 1]
     return {
         "accuracy": accuracy_score(y_test, predicted),
         "precision_1": precision_score(y_test, predicted, zero_division=0),
@@ -52,10 +79,10 @@ def evaluate(model, X_test, y_test):
     }
 
 
-def run_baseline(df):
-    """Fit reference and logistic models using the same reproducible split."""
-    X = df[BASELINE_FEATURES].copy()  # Selected input columns; no target leakage
-    y = df[TARGET]  # Outcome: observed difficulty within 12 months
+def run_xgb(df):
+    """Fit the XGBoost model, save it, and return held-out metrics."""
+    X = df[FEATURES].copy()
+    y = df[TARGET]
     X_train, X_test, y_train, y_test = train_test_split(
         X,
         y,
@@ -64,12 +91,9 @@ def run_baseline(df):
         random_state=42,
     )
 
-    reference = DummyClassifier(strategy="most_frequent")
-    reference.fit(X_train, y_train)  # Always predicts training majority class
-
-    pipeline = build_baseline_pipeline()
-    pipeline.fit(X_train, y_train)  # Preprocessing and model fitted together
+    pipeline = build_xgb_pipeline()
+    pipeline.fit(X_train, y_train)
 
     MODEL_FILE.parent.mkdir(parents=True, exist_ok=True)
-    joblib.dump(pipeline, MODEL_FILE)  # Save local fitted pipeline for later use
-    return evaluate(reference, X_test, y_test), evaluate(pipeline, X_test, y_test)
+    joblib.dump(pipeline, MODEL_FILE)
+    return evaluate(pipeline, X_test, y_test)

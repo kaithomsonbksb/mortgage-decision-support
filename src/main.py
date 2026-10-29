@@ -1,7 +1,7 @@
 """Run the supplied baseline only; assessed advisory rules are NOT provided."""
 
 from src.data import load_data, print_audit
-from src.model import BASELINE_FEATURES, MODEL_FILE, run_baseline
+from src.model import FEATURES, MODEL_FILE, run_xgb
 
 
 def report(name, result):
@@ -15,11 +15,10 @@ def report(name, result):
 def main():
     df = load_data()
     print_audit(df)
-    reference_results, baseline_results = run_baseline(df)
-    print("\nTutor-selected baseline features:", BASELINE_FEATURES)
-    report("Majority-class reference", reference_results)
-    report("Two-feature logistic-regression baseline", baseline_results)
-    print(f"\nTrained baseline saved: {MODEL_FILE}")
+    xgb_results = run_xgb(df)
+    print("\nModel features:", FEATURES)
+    report("XGBoost model", xgb_results)
+    print(f"\nTrained XGBoost model saved: {MODEL_FILE}")
     print(
         "LEARNER: justify/extend model; create decision rules, application integration, tests, and improvement evidence."
     )

@@ -1,11 +1,11 @@
-"""Week 7 mortgage scaffold: score ONE sample new applicant.
+"""Score one sample new applicant with the trained XGBoost model.
 
-Tutor provided: shows loading a fitted mortgage model, formatting the same
-features in the same order, and predicting a class-1 score.
+Shows loading a fitted mortgage model, formatting the same features in the
+same order, and predicting a class-1 score.
 NOT provided: learner's mortgage-specific validation and decision rules.
 
 Run `python -m src.main` first, from the project root.
-Then `python -m src.applicant_example`.
+Then run `python -m src.applicant_example`.
 """
 
 import joblib
@@ -14,10 +14,20 @@ import pandas as pd
 from src.model import MODEL_FILE, BASELINE_FEATURES
 from src.decisions import validate_application_fields, validate_score
 
-# Sample values for the TWO-FEATURE model. Do not use actual customer information.
+# Sample values for the model. Do not use actual customer information.
 EXAMPLE_APPLICATION = {
     "credit_score": 680,
     "debt_to_income_ratio": 0.32,
+    "missed_payments_24m": 0,
+    "previous_default_flag": 0,
+    "credit_utilisation_pct": 35.0,
+    "employment_years": 5.0,
+    "savings_gbp": 20000.0,
+    "annual_income_gbp": 60000.0,
+    "loan_to_value_pct": 80.0,
+    "requested_loan_gbp": 200000.0,
+    "term_years": 25,
+    "employment_type": "Employed",
 }
 
 
@@ -43,7 +53,6 @@ def main():
     print("Calibration not assessed; this is not a validated PD.")
     print("Provisional recommendation: PENDING — rules not yet implemented")
     print("Status: AWAITING HUMAN REVIEW — no mortgage approved or declined")
-    print("NEXT: implement and test your own decision rules from Week 6")
 
 
 if __name__ == "__main__":
