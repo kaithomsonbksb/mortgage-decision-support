@@ -1,7 +1,7 @@
-"""Run the supplied baseline only; assessed advisory rules are NOT provided."""
+"""Compare the supplied models; assessed advisory rules are NOT provided."""
 
 from src.data import load_data, print_audit
-from src.model import FEATURES, MODEL_FILE, run_xgb
+from src.model import FEATURES, MODEL_FILE, run_baseline
 
 
 def report(name, result):
@@ -15,13 +15,11 @@ def report(name, result):
 def main():
     df = load_data()
     print_audit(df)
-    xgb_results = run_xgb(df)
+    results = run_baseline(df)
     print("\nModel features:", FEATURES)
-    report("XGBoost model", xgb_results)
+    for name, result in results.items():
+        report(name, result)
     print(f"\nTrained XGBoost model saved: {MODEL_FILE}")
-    print(
-        "LEARNER: justify/extend model; create decision rules, application integration, tests, and improvement evidence."
-    )
 
 
 if __name__ == "__main__":

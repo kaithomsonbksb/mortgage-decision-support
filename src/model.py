@@ -4,6 +4,9 @@ from pathlib import Path
 
 import joblib
 from sklearn.compose import ColumnTransformer
+from sklearn.dummy import DummyClassifier
+from sklearn.impute import SimpleImputer
+from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (
     accuracy_score,
     confusion_matrix,
@@ -15,6 +18,7 @@ from sklearn.metrics import (
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import StandardScaler
 from xgboost import XGBClassifier
 
 from src.data import TARGET
@@ -35,9 +39,19 @@ NUMERIC_FEATURES = [
 CATEGORICAL_FEATURES = ["employment_type"]
 FEATURES = NUMERIC_FEATURES + CATEGORICAL_FEATURES
 
-# Retain this name for the scoring example's public import.
-BASELINE_FEATURES = FEATURES
-MODEL_FILE = Path(__file__).resolve().parents[1] / "models" / "baseline_model.joblib"
+BASELINE_FEATURES = ["credit_score", "debt_to_income_ratio"]
+MODEL_FILE = Path(__file__).resolve().parents[1] / "models" / "xgb_model.joblib"
+
+
+def build_baseline_pipeline():
+    """Return the supplied two-feature logistic-regression pipeline."""
+    return Pipeline(
+        steps=[
+            ("imputer", SimpleImputer(strategy="median")),
+            ("scaler", StandardScaler()),
+            ("classifier", LogisticRegression(max_iter=1000, random_state=42)),
+        ]
+    )
 
 
 def build_xgb_pipeline():
@@ -79,8 +93,8 @@ def evaluate(model, X_test, y_test):
     }
 
 
-def run_xgb(df):
-    """Fit the XGBoost model, save it, and return held-out metrics."""
+def run_baseline(df):
+    """Fit three comparable models on one held-out split."""
     X = df[FEATURES].copy()
     y = df[TARGET]
     X_train, X_test, y_train, y_test = train_test_split(
@@ -91,9 +105,24 @@ def run_xgb(df):
         random_state=42,
     )
 
-    pipeline = build_xgb_pipeline()
-    pipeline.fit(X_train, y_train)
+    reference = DummyClassifier(strategy="most_frequent")
+    reference.fit(X_train, y_train)
+
+    tutor_lr = build_baseline_pipeline()
+    tutor_lr.fit(X_train[BASELINE_FEATURES], y_train)
+
+    xgb_pipeline = build_xgb_pipeline()
+    xgb_pipeline.fit(X_train, y_train)
 
     MODEL_FILE.parent.mkdir(parents=True, exist_ok=True)
-    joblib.dump(pipeline, MODEL_FILE)
-    return evaluate(pipeline, X_test, y_test)
+    joblib.dump(xgb_pipeline, MODEL_FILE)
+    return {
+        "Majority reference": evaluate(reference, X_test, y_test),
+        "Tutor LR": evaluate(tutor_lr, X_test[BASELINE_FEATURES], y_test),
+        "XGBoost": evaluate(xgb_pipeline, X_test, y_test),
+    }
+
+
+def run_xgb(df):
+    """Fit the XGBoost model and return its held-out metrics."""
+    return run_baseline(df)["XGBoost"]

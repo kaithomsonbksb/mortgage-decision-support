@@ -11,7 +11,7 @@ Then run `python -m src.applicant_example`.
 import joblib
 import pandas as pd
 
-from src.model import MODEL_FILE, BASELINE_FEATURES
+from src.model import FEATURES, MODEL_FILE
 from src.decisions import validate_application_fields, validate_score
 
 # Sample values for the model. Do not use actual customer information.
@@ -33,8 +33,8 @@ EXAMPLE_APPLICATION = {
 
 def score_example(application):
     """Generate model's estimated probability for class 1; no advice."""
-    validate_application_fields(application, BASELINE_FEATURES)
-    row = pd.DataFrame([application], columns=BASELINE_FEATURES)
+    validate_application_fields(application, FEATURES)
+    row = pd.DataFrame([application], columns=FEATURES)
     if not MODEL_FILE.is_file():
         raise FileNotFoundError("No trained model: first run python -m src.main")
     # Load only the trusted, locally generated model artefact.
