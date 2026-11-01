@@ -1,7 +1,7 @@
 """Compare the supplied models; assessed advisory rules are NOT provided."""
 
 from src.data import load_data, print_audit
-from src.model import FEATURES, MODEL_FILE, run_baseline
+from src.model import FEATURES, MODEL_FILE, run_models
 
 
 def report(name, result):
@@ -15,7 +15,7 @@ def report(name, result):
 def main():
     df = load_data()
     print_audit(df)
-    results = run_baseline(df)
+    results = run_models(df)
     print("\nModel features:", FEATURES)
     for name, result in results.items():
         report(name, result)

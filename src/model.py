@@ -38,11 +38,10 @@ NUMERIC_FEATURES = [
 ]
 CATEGORICAL_FEATURES = ["employment_type"]
 FEATURES = NUMERIC_FEATURES + CATEGORICAL_FEATURES
-
-BASELINE_FEATURES = ["credit_score", "debt_to_income_ratio"]
 MODEL_FILE = Path(__file__).resolve().parents[1] / "models" / "xgb_model.joblib"
 
 
+# leaving original model unchanged as a benchmark to test against the new XGBoost model
 def build_baseline_pipeline():
     """Return the supplied two-feature logistic-regression pipeline."""
     return Pipeline(
@@ -93,7 +92,7 @@ def evaluate(model, X_test, y_test):
     }
 
 
-def run_baseline(df):
+def run_models(df):
     """Fit three comparable models on one held-out split."""
     X = df[FEATURES].copy()
     y = df[TARGET]
@@ -109,7 +108,7 @@ def run_baseline(df):
     reference.fit(X_train, y_train)
 
     tutor_lr = build_baseline_pipeline()
-    tutor_lr.fit(X_train[BASELINE_FEATURES], y_train)
+    tutor_lr.fit(X_train[FEATURES], y_train)
 
     xgb_pipeline = build_xgb_pipeline()
     xgb_pipeline.fit(X_train, y_train)
@@ -117,12 +116,12 @@ def run_baseline(df):
     MODEL_FILE.parent.mkdir(parents=True, exist_ok=True)
     joblib.dump(xgb_pipeline, MODEL_FILE)
     return {
-        "Majority reference": evaluate(reference, X_test, y_test),
-        "Tutor LR": evaluate(tutor_lr, X_test[BASELINE_FEATURES], y_test),
-        "XGBoost": evaluate(xgb_pipeline, X_test, y_test),
+        "Base benchmark": evaluate(reference, X_test, y_test),
+        "Logistic Regression benchmark": evaluate(tutor_lr, X_test[FEATURES], y_test),
+        "XGBoost (my model)": evaluate(xgb_pipeline, X_test, y_test),
     }
 
 
 def run_xgb(df):
     """Fit the XGBoost model and return its held-out metrics."""
-    return run_baseline(df)["XGBoost"]
+    return run_models(df)["XGBoost"]
