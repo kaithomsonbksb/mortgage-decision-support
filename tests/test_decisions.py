@@ -32,7 +32,7 @@ class AdvisoryDecisionTests(unittest.TestCase):
         self.assertEqual(decision["flags"], [])
 
     def test_medium_score_is_enhanced_review(self):
-        decision = advisory_decision(0.20, self.application)
+        decision = advisory_decision(0.30, self.application)
 
         self.assertEqual(decision["outcome"], "Enhanced review")
         self.assertEqual(decision["band"], "Medium")
@@ -102,7 +102,8 @@ class AdvisoryDecisionTests(unittest.TestCase):
 
     def test_score_band_boundaries(self):
         cases = (
-            (0.20, "Medium", "Enhanced review"),
+            (0.29, "Low", "Standard review"),
+            (0.30, "Medium", "Enhanced review"),
             (0.40, "High", "Senior review"),
         )
         for score, expected_band, expected_outcome in cases:

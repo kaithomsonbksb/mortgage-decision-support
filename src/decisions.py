@@ -32,7 +32,7 @@ VALID_RANGE = {
 }
 VALID_EMPLOYMENT_TYPES = ["Employed", "Contractor", "Self-employed"]
 
-BAND_MEDIUM = 0.20
+BAND_MEDIUM = 0.30
 BAND_HIGH = 0.40
 LTV_FLAG = 90
 MISSED_PAYMENTS_FLAG = 2

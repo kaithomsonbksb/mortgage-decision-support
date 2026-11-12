@@ -56,7 +56,7 @@ def build_baseline_pipeline():
     )
 
 
-def build_xgb_pipeline():
+def build_xgb_pipeline(**xgb_params):
     """Return preprocessing and a reproducible first XGBoost model."""
     preprocessor = ColumnTransformer(
         transformers=[
@@ -72,6 +72,7 @@ def build_xgb_pipeline():
         random_state=42,
         eval_metric="logloss",
         n_jobs=1,
+        **xgb_params,
     )
     return Pipeline(
         steps=[
