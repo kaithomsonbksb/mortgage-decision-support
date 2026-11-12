@@ -44,9 +44,8 @@ TEST_SIZE = 0.20
 METRICS = ("accuracy", "precision_1", "recall_1", "f1_1", "roc_auc")
 
 
-# Module-supplied starter model, kept unchanged as the benchmark the XGBoost model is compared against.
+# base model to test against
 def build_baseline_pipeline():
-    """Return the supplied two-feature logistic-regression pipeline."""
     return Pipeline(
         steps=[
             ("imputer", SimpleImputer(strategy="median")),
@@ -57,7 +56,6 @@ def build_baseline_pipeline():
 
 
 def build_xgb_pipeline(**xgb_params):
-    """Return preprocessing and a reproducible first XGBoost model."""
     preprocessor = ColumnTransformer(
         transformers=[
             ("numeric", "passthrough", NUMERIC_FEATURES),
@@ -83,7 +81,6 @@ def build_xgb_pipeline(**xgb_params):
 
 
 def evaluate(model, X_test, y_test):
-    """Report held-out binary classification metrics."""
     predicted = model.predict(X_test)
     scores = model.predict_proba(X_test)[:, 1]
     return {
@@ -97,7 +94,6 @@ def evaluate(model, X_test, y_test):
 
 
 def run_models(df):
-    """Fit three comparable models on one held-out split."""
     X = df[FEATURES].copy()
     y = df[TARGET]
     X_train, X_test, y_train, y_test = train_test_split(
@@ -129,11 +125,6 @@ def run_models(df):
 
 
 def cross_validate_models(df, folds=CV_FOLDS):
-    """Run stratified k-fold CV on the 640 training rows only; nothing is saved.
-
-    Returns per-metric mean and standard deviation across folds, plus the
-    confusion matrix summed over all test folds.
-    """
     X = df[FEATURES].copy()
     y = df[TARGET]
     X_train, _, y_train, _ = train_test_split(
