@@ -116,7 +116,7 @@ def info_notes(application):
     notes = []
     annual_income = application.get("annual_income_gbp")
     requested_loan = application.get("requested_loan_gbp")
-    if annual_income and requested_loan and requested_loan / annual_income > HIGH_LTI:
+    if annual_income and requested_loan and requested_loan / annual_income >= HIGH_LTI:
         notes.append(f"High loan-to-income ratio: exceeds {HIGH_LTI:.1f}")
     for field in OPTIONAL_FIELDS:
         value = application.get(field)
