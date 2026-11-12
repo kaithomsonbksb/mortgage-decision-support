@@ -40,6 +40,7 @@ FEATURES = NUMERIC_FEATURES + CATEGORICAL_FEATURES
 BASELINE_FEATURES = ["credit_score", "debt_to_income_ratio"]
 MODEL_FILE = Path(__file__).resolve().parents[1] / "models" / "xgb_model.joblib"
 CV_FOLDS = 5
+TEST_SIZE = 0.20
 METRICS = ("accuracy", "precision_1", "recall_1", "f1_1", "roc_auc")
 
 
@@ -101,7 +102,7 @@ def run_models(df):
     X_train, X_test, y_train, y_test = train_test_split(
         X,
         y,
-        test_size=0.20,
+        test_size=TEST_SIZE,
         stratify=y,
         random_state=42,
     )
@@ -127,13 +128,20 @@ def run_models(df):
 
 
 def cross_validate_models(df, folds=CV_FOLDS):
-    """Evaluate the three models with stratified k-fold CV; nothing is saved.
+    """Run stratified k-fold CV on the 640 training rows only; nothing is saved.
 
     Returns per-metric mean and standard deviation across folds, plus the
     confusion matrix summed over all test folds.
     """
     X = df[FEATURES].copy()
     y = df[TARGET]
+    X_train, _, y_train, _ = train_test_split(
+        X,
+        y,
+        test_size=TEST_SIZE,
+        stratify=y,
+        random_state=42,
+    )
     builders = {
         "Base benchmark": (
             lambda: DummyClassifier(strategy="most_frequent"),
@@ -144,12 +152,12 @@ def cross_validate_models(df, folds=CV_FOLDS):
     }
     splitter = StratifiedKFold(n_splits=folds, shuffle=True, random_state=42)
     fold_results = {name: [] for name in builders}
-    for train_idx, test_idx in splitter.split(X, y):
+    for train_idx, test_idx in splitter.split(X_train, y_train):
         for name, (build, cols) in builders.items():
             model = build()
-            model.fit(X.iloc[train_idx][cols], y.iloc[train_idx])
+            model.fit(X_train.iloc[train_idx][cols], y_train.iloc[train_idx])
             fold_results[name].append(
-                evaluate(model, X.iloc[test_idx][cols], y.iloc[test_idx])
+                evaluate(model, X_train.iloc[test_idx][cols], y_train.iloc[test_idx])
             )
 
     summary = {}
