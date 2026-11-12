@@ -59,6 +59,39 @@ class AdvisoryDecisionTests(unittest.TestCase):
         self.assertEqual(decision["outcome"], "Enhanced review")
         self.assertIn("F1: previous default recorded", decision["flags"])
 
+    def test_two_missed_payments_are_enhanced_review(self):
+        self.application["missed_payments_24m"] = 2
+
+        decision = advisory_decision(0.10, self.application)
+
+        self.assertEqual(decision["outcome"], "Enhanced review")
+        self.assertIn("F1: 2 or more missed payments in 24 months", decision["flags"])
+
+    def test_previous_default_and_high_ltv_are_enhanced_review(self):
+        self.application["previous_default_flag"] = 1
+        self.application["loan_to_value_pct"] = 92
+
+        decision = advisory_decision(0.10, self.application)
+
+        self.assertEqual(decision["outcome"], "Enhanced review")
+        self.assertEqual(len(decision["flags"]), 2)
+
+    def test_loan_to_income_threshold_note_is_inclusive(self):
+        self.application["requested_loan_gbp"] = 270000
+
+        decision = advisory_decision(0.10, self.application)
+
+        self.assertIn(
+            "High loan-to-income ratio: at or above 4.5x income", decision["notes"]
+        )
+
+    def test_debt_to_income_ratio_of_1_2_can_be_assessed(self):
+        self.application["debt_to_income_ratio"] = 1.2
+
+        decision = advisory_decision(0.10, self.application)
+
+        self.assertNotEqual(decision["outcome"], "Unable to assess")
+
     def test_missing_credit_score_cannot_be_assessed(self):
         self.application["credit_score"] = None
 
