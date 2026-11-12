@@ -1,8 +1,3 @@
-
-Run `python -m src.main` first, from the project root.
-Then run `python -m src.applicant_example`.
-"""
-
 import joblib
 import pandas as pd
 
