@@ -13,7 +13,7 @@ py -m venv .venv
 .\.venv\Scripts\python.exe -m unittest discover -s tests -v
 ```
 
-The supplied dataset is already in `data/mortgage_data.csv`. The program uses only **synthetic data**. Do not use real applicant details.
+The supplied dataset is already in `data/A2 Mortgage Credit Risk Dataset.csv`. The program uses only **synthetic data**. Do not use real applicant details.
 
 ### What is working?
 - Data audit (`src/data.py`)

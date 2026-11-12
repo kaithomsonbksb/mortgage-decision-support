@@ -7,7 +7,9 @@ interpret; it does not select features or complete the assessed data analysis.
 from pathlib import Path
 import pandas as pd
 
-DATA_FILE = Path(__file__).resolve().parents[1] / "data" / "mortgage_data.csv"
+DATA_FILE = (
+    Path(__file__).resolve().parents[1] / "data" / "A2 Mortgage Credit Risk Dataset.csv"
+)
 TARGET = "repayment_difficulty_12m"
 
 

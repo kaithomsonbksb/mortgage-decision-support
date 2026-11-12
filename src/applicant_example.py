@@ -1,8 +1,3 @@
-"""Score one sample new applicant with the trained XGBoost model.
-
-Shows loading a fitted mortgage model, formatting the same features in the
-same order, and predicting a class-1 score.
-NOT provided: learner's mortgage-specific validation and decision rules.
 
 Run `python -m src.main` first, from the project root.
 Then run `python -m src.applicant_example`.
@@ -12,10 +7,15 @@ import joblib
 import pandas as pd
 
 from src.model import FEATURES, MODEL_FILE
-from src.decisions import validate_application_fields, validate_score
+from src.decisions import (
+    advisory_decision,
+    validate_application,
+    validate_application_fields,
+    validate_score,
+)
 
 # Sample values for the model. Do not use actual customer information.
-EXAMPLE_APPLICATION = {
+BASE_APPLICATION = {
     "credit_score": 680,
     "debt_to_income_ratio": 0.32,
     "missed_payments_24m": 0,
@@ -28,6 +28,23 @@ EXAMPLE_APPLICATION = {
     "requested_loan_gbp": 200000.0,
     "term_years": 25,
     "employment_type": "Employed",
+}
+
+EXAMPLE_APPLICATIONS = {
+    "Clean application": BASE_APPLICATION,
+    "High-LTV application": {
+        **BASE_APPLICATION,
+        "loan_to_value_pct": 95.0,
+    },
+    "Adverse-credit application": {
+        **BASE_APPLICATION,
+        "missed_payments_24m": 3,
+        "previous_default_flag": 1,
+    },
+    "Missing-credit-score application": {
+        **BASE_APPLICATION,
+        "credit_score": None,
+    },
 }
 
 
@@ -43,16 +60,31 @@ def score_example(application):
     return validate_score(float(score))
 
 
+def print_decision(name, application):
+    """Validate, optionally score, and print one advisory decision."""
+    problems = validate_application(application)
+    if problems:
+        decision = advisory_decision(None, application)
+    else:
+        score = score_example(application)
+        decision = advisory_decision(score, application)
+
+    print(f"\n{name}")
+    print(f"Outcome: {decision['outcome']}")
+    if decision["score"] is None:
+        print("Score: not calculated")
+    else:
+        print(f"Score: {decision['score']:.3f}")
+    print(f"Band: {decision['band'] or 'not available'}")
+    print(f"Flags: {', '.join(decision['flags']) or 'None'}")
+    print(f"Notes: {', '.join(decision['notes']) or 'None'}")
+    print(f"Reviewer: {decision['reviewer']}")
+
+
 def main():
-    score = score_example(EXAMPLE_APPLICATION)
-    print("MORTGAGE APPLICATION ASSESSMENT")
-    print("Applicant details:")
-    print(f"credit_score={EXAMPLE_APPLICATION['credit_score']}")
-    print(f"debt_to_income_ratio={EXAMPLE_APPLICATION['debt_to_income_ratio']:.2f}")
-    print(f"Repayment-difficulty class-1 score: {score:.3f}")
-    print("Calibration not assessed; this is not a validated PD.")
-    print("Provisional recommendation: PENDING — rules not yet implemented")
-    print("Status: AWAITING HUMAN REVIEW — no mortgage approved or declined")
+    print("MORTGAGE APPLICATION ADVISORY EXAMPLES")
+    for name, application in EXAMPLE_APPLICATIONS.items():
+        print_decision(name, application)
 
 
 if __name__ == "__main__":

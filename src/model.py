@@ -1,8 +1,7 @@
-"""Train and evaluate the XGBoost mortgage-risk model."""
-
 from pathlib import Path
 
 import joblib
+import numpy as np
 from sklearn.compose import ColumnTransformer
 from sklearn.dummy import DummyClassifier
 from sklearn.impute import SimpleImputer
@@ -15,7 +14,7 @@ from sklearn.metrics import (
     recall_score,
     roc_auc_score,
 )
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import StratifiedKFold, train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import StandardScaler
@@ -38,7 +37,10 @@ NUMERIC_FEATURES = [
 ]
 CATEGORICAL_FEATURES = ["employment_type"]
 FEATURES = NUMERIC_FEATURES + CATEGORICAL_FEATURES
+BASELINE_FEATURES = ["credit_score", "debt_to_income_ratio"]
 MODEL_FILE = Path(__file__).resolve().parents[1] / "models" / "xgb_model.joblib"
+CV_FOLDS = 5
+METRICS = ("accuracy", "precision_1", "recall_1", "f1_1", "roc_auc")
 
 
 # leaving original model unchanged as a benchmark to test against the new XGBoost model
@@ -108,7 +110,7 @@ def run_models(df):
     reference.fit(X_train, y_train)
 
     tutor_lr = build_baseline_pipeline()
-    tutor_lr.fit(X_train[FEATURES], y_train)
+    tutor_lr.fit(X_train[BASELINE_FEATURES], y_train)
 
     xgb_pipeline = build_xgb_pipeline()
     xgb_pipeline.fit(X_train, y_train)
@@ -117,11 +119,47 @@ def run_models(df):
     joblib.dump(xgb_pipeline, MODEL_FILE)
     return {
         "Base benchmark": evaluate(reference, X_test, y_test),
-        "Logistic Regression benchmark": evaluate(tutor_lr, X_test[FEATURES], y_test),
+        "Logistic Regression benchmark": evaluate(
+            tutor_lr, X_test[BASELINE_FEATURES], y_test
+        ),
         "XGBoost (my model)": evaluate(xgb_pipeline, X_test, y_test),
     }
 
 
-def run_xgb(df):
-    """Fit the XGBoost model and return its held-out metrics."""
-    return run_models(df)["XGBoost"]
+def cross_validate_models(df, folds=CV_FOLDS):
+    """Evaluate the three models with stratified k-fold CV; nothing is saved.
+
+    Returns per-metric mean and standard deviation across folds, plus the
+    confusion matrix summed over all test folds.
+    """
+    X = df[FEATURES].copy()
+    y = df[TARGET]
+    builders = {
+        "Base benchmark": (
+            lambda: DummyClassifier(strategy="most_frequent"),
+            FEATURES,
+        ),
+        "Logistic Regression benchmark": (build_baseline_pipeline, BASELINE_FEATURES),
+        "XGBoost (my model)": (build_xgb_pipeline, FEATURES),
+    }
+    splitter = StratifiedKFold(n_splits=folds, shuffle=True, random_state=42)
+    fold_results = {name: [] for name in builders}
+    for train_idx, test_idx in splitter.split(X, y):
+        for name, (build, cols) in builders.items():
+            model = build()
+            model.fit(X.iloc[train_idx][cols], y.iloc[train_idx])
+            fold_results[name].append(
+                evaluate(model, X.iloc[test_idx][cols], y.iloc[test_idx])
+            )
+
+    summary = {}
+    for name, results in fold_results.items():
+        summary[name] = {
+            metric: (
+                float(np.mean([r[metric] for r in results])),
+                float(np.std([r[metric] for r in results])),
+            )
+            for metric in METRICS
+        }
+        summary[name]["confusion_matrix"] = sum(r["confusion_matrix"] for r in results)
+    return summary
