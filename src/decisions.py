@@ -51,7 +51,6 @@ def validate_application_fields(application, required_fields):
             invalid.append(field)
     if invalid:
         raise ValueError(f"Missing or invalid fields: {invalid}")
-    # LEARNER: add field-specific ranges and consistency rules.
     return True
 
 
@@ -59,9 +58,10 @@ def validate_score(score):
     """Check that a binary classifier's reported score is in the interval [0, 1]."""
     if isinstance(score, bool) or not isinstance(score, Real):
         raise ValueError("Model score must be numeric")
-    if not math.isfinite(score) or not 0 <= score <= 1:
+    numeric_score = float(score)
+    if not math.isfinite(numeric_score) or not 0.0 <= numeric_score <= 1.0:
         raise ValueError("Model score must be finite and between 0 and 1")
-    return float(score)
+    return numeric_score
 
 
 def validate_application(application):
@@ -91,7 +91,7 @@ def validate_application(application):
 def policy_flags(application):
     """Return reasons for adverse-credit and high-LTV policy flags."""
     flags = []
-    if application.get("missed_payments_24m", 0) > MISSED_PAYMENTS_FLAG:
+    if application.get("missed_payments_24m", 0) >= MISSED_PAYMENTS_FLAG:
         flags.append(f"F1: missed payments exceed {MISSED_PAYMENTS_FLAG} in 24 months")
     if application.get("previous_default_flag") == 1:
         flags.append("F1: previous default recorded")
@@ -148,10 +148,8 @@ def advisory_decision(score, application):
         "High": 3,
     }
     level = outcomes[band]
-    if len(flags) == 1:
+    if flags:
         level = max(level, 2)
-    elif len(flags) > 1:
-        level = 3
 
     outcome_labels = {
         1: "Standard review",
