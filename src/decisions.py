@@ -103,7 +103,7 @@ def policy_flags(application):
     """Return reasons for adverse-credit and high-LTV policy flags."""
     flags = []
     if application.get("missed_payments_24m", 0) >= MISSED_PAYMENTS_FLAG:
-        flags.append(f"F1: missed payments exceed {MISSED_PAYMENTS_FLAG} in 24 months")
+        flags.append(f"F1: {MISSED_PAYMENTS_FLAG} or more missed payments in 24 months")
     if application.get("previous_default_flag") == 1:
         flags.append("F1: previous default recorded")
     if application.get("loan_to_value_pct", 0) > LTV_FLAG:
@@ -117,7 +117,7 @@ def info_notes(application):
     annual_income = application.get("annual_income_gbp")
     requested_loan = application.get("requested_loan_gbp")
     if annual_income and requested_loan and requested_loan / annual_income >= HIGH_LTI:
-        notes.append(f"High loan-to-income ratio: exceeds {HIGH_LTI:.1f}")
+        notes.append(f"High loan-to-income ratio: at or above {HIGH_LTI:.1f}x income")
     for field in OPTIONAL_FIELDS:
         value = application.get(field)
         if _is_missing_optional(value):
