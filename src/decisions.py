@@ -6,16 +6,17 @@ REQUIRED_FIELDS = [
     "debt_to_income_ratio",
     "missed_payments_24m",
     "previous_default_flag",
-    "credit_utilisation_pct",
-    "employment_years",
-    "savings_gbp",
     "annual_income_gbp",
     "loan_to_value_pct",
     "requested_loan_gbp",
     "term_years",
     "employment_type",
 ]
-OPTIONAL_FIELDS = []
+OPTIONAL_FIELDS = [
+    "employment_years",
+    "savings_gbp",
+    "credit_utilisation_pct",
+]
 VALID_RANGE = {
     "credit_score": (0, 850),
     "debt_to_income_ratio": (0, 1),
@@ -54,6 +55,14 @@ def validate_application_fields(application, required_fields):
     return True
 
 
+def _is_missing_optional(value):
+    return (
+        value is None
+        or (isinstance(value, str) and not value.strip())
+        or (isinstance(value, Real) and math.isnan(value))
+    )
+
+
 def validate_score(score):
     """Check that a binary classifier's reported score is in the interval [0, 1]."""
     if isinstance(score, bool) or not isinstance(score, Real):
@@ -67,8 +76,10 @@ def validate_score(score):
 def validate_application(application):
     """Return all missing, invalid, out-of-range, and unknown-value problems."""
     problems = []
-    for field in REQUIRED_FIELDS:
+    for field in REQUIRED_FIELDS + OPTIONAL_FIELDS:
         value = application.get(field)
+        if field in OPTIONAL_FIELDS and _is_missing_optional(value):
+            continue
         if value is None or value == "":
             problems.append(f"{field}: missing")
             continue
@@ -107,9 +118,9 @@ def info_notes(application):
     requested_loan = application.get("requested_loan_gbp")
     if annual_income and requested_loan and requested_loan / annual_income > HIGH_LTI:
         notes.append(f"High loan-to-income ratio: exceeds {HIGH_LTI:.1f}")
-    for field in REQUIRED_FIELDS:
+    for field in OPTIONAL_FIELDS:
         value = application.get(field)
-        if value is None or value == "":
+        if _is_missing_optional(value):
             notes.append(f"Incomplete data: {field} is missing")
     return notes
 

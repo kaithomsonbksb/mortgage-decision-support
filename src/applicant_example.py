@@ -3,6 +3,7 @@ import pandas as pd
 
 from src.model import FEATURES, MODEL_FILE
 from src.decisions import (
+    REQUIRED_FIELDS,
     advisory_decision,
     validate_application,
     validate_application_fields,
@@ -45,7 +46,7 @@ EXAMPLE_APPLICATIONS = {
 
 def score_example(application):
     """Generate model's estimated probability for class 1; no advice."""
-    validate_application_fields(application, FEATURES)
+    validate_application_fields(application, REQUIRED_FIELDS)
     row = pd.DataFrame([application], columns=FEATURES)
     if not MODEL_FILE.is_file():
         raise FileNotFoundError("No trained model: first run python -m src.main")
