@@ -43,7 +43,7 @@ CV_FOLDS = 5
 METRICS = ("accuracy", "precision_1", "recall_1", "f1_1", "roc_auc")
 
 
-# module baseline, kept as benchmak
+# Module-supplied starter model, kept unchanged as the benchmark the XGBoost model is compared against.
 def build_baseline_pipeline():
     """Return the supplied two-feature logistic-regression pipeline."""
     return Pipeline(

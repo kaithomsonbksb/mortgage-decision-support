@@ -25,8 +25,7 @@ The supplied dataset is already in `data/A2 Mortgage Credit Risk Dataset.csv`. T
 
 Develop, justify and test your own logical decision rules and their integration with the model; make evidence-informed modelling/evaluation decisions, carry out meaningful improvement and retesting, document decisions and sources, and maintain Git/GitHub version history. The intentionally incomplete `advisory_decision()` in `src/decisions.py` is not an error in the supplied training/scoring example.
 
-**Version-control and data note:** Synthetic CSV data and generated `.joblib` model files are excluded from Git by default. The tutor has provided the dataset in the assignment pack; explain how to obtain it in your README. Seek permission before putting data into a public repository. Never commit real personal or confidential data or credentials. A reviewer must be able to run the project using the supplied dataset and the documented commands.
-
+**Data note:** The synthetic dataset is supplied in the DN6MD001 assignment pack and is included in this repository at `data/A2 Mortgage Credit Risk Dataset.csv`. It contains synthetic data only
 **Academic integrity:** Acknowledge module-provided code and any permitted AI assistance under the approved brief. Keep the final report and project evidence consistent.
 
 **AI-assisted comments:** All comments placed beneath variable declarations in this repository were generated with AI to improve code readability.
