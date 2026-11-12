@@ -42,6 +42,15 @@ MODEL_FILE = Path(__file__).resolve().parents[1] / "models" / "xgb_model.joblib"
 CV_FOLDS = 5
 TEST_SIZE = 0.20
 METRICS = ("accuracy", "precision_1", "recall_1", "f1_1", "roc_auc")
+FINAL_XGB_PARAMS = {
+    "n_estimators": 300,
+    "min_child_weight": 5,
+    "subsample": 0.8,
+    "colsample_bytree": 0.8,
+    "max_depth": 2,
+    "learning_rate": 0.05,
+    "scale_pos_weight": 1,
+}
 
 
 # base model to test against
@@ -113,14 +122,18 @@ def run_models(df):
     xgb_pipeline = build_xgb_pipeline()
     xgb_pipeline.fit(X_train, y_train)
 
+    final_xgb_pipeline = build_xgb_pipeline(**FINAL_XGB_PARAMS)
+    final_xgb_pipeline.fit(X_train, y_train)
+
     MODEL_FILE.parent.mkdir(parents=True, exist_ok=True)
-    joblib.dump(xgb_pipeline, MODEL_FILE)
+    joblib.dump(final_xgb_pipeline, MODEL_FILE)
     return {
         "Base benchmark": evaluate(reference, X_test, y_test),
         "Logistic Regression benchmark": evaluate(
             tutor_lr, X_test[BASELINE_FEATURES], y_test
         ),
         "XGBoost (my model)": evaluate(xgb_pipeline, X_test, y_test),
+        "Regularised XGBoost (final)": evaluate(final_xgb_pipeline, X_test, y_test),
     }
 
 
