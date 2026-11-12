@@ -19,7 +19,7 @@ OPTIONAL_FIELDS = [
 ]
 VALID_RANGE = {
     "credit_score": (0, 850),
-    "debt_to_income_ratio": (0, 1),
+    "debt_to_income_ratio": (0, 2),
     "missed_payments_24m": (0, 24),
     "previous_default_flag": (0, 1),
     "credit_utilisation_pct": (0, 100),
