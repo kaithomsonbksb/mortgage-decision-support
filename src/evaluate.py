@@ -53,9 +53,7 @@ def evaluate_on_validation(X_fit, X_val, y_fit, y_val):
 
     baseline = build_baseline_pipeline()
     baseline.fit(X_fit[BASELINE_FEATURES], y_fit)
-    baseline_results = evaluate(
-        baseline, X_val[BASELINE_FEATURES], y_val
-    )
+    baseline_results = evaluate(baseline, X_val[BASELINE_FEATURES], y_val)
 
     xgb_model = build_xgb_pipeline()
     xgb_model.fit(X_fit, y_fit)
@@ -81,16 +79,12 @@ def threshold_sweep(y_true, scores, thresholds=THRESHOLDS):
     rows = []
     for threshold in thresholds:
         predicted = (scores >= threshold).astype(int)
-        tn, fp, fn, tp = confusion_matrix(
-            y_true, predicted, labels=[0, 1]
-        ).ravel()
+        tn, fp, fn, tp = confusion_matrix(y_true, predicted, labels=[0, 1]).ravel()
         rows.append(
             {
                 "threshold": threshold,
                 "flagged_pct": predicted.mean() * 100,
-                "precision": precision_score(
-                    y_true, predicted, zero_division=0
-                ),
+                "precision": precision_score(y_true, predicted, zero_division=0),
                 "recall": recall_score(y_true, predicted, zero_division=0),
                 "f1": f1_score(y_true, predicted, zero_division=0),
                 "false_positives": fp,

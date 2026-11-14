@@ -59,17 +59,17 @@ def run_grid(X_fit, X_val, y_fit, y_val):
                 "extreme_share": extreme_share(scores),
             }
         )
-    return pd.DataFrame(rows).sort_values(
-        "validation_auc", ascending=False
-    ).reset_index(drop=True)
+    return (
+        pd.DataFrame(rows)
+        .sort_values("validation_auc", ascending=False)
+        .reset_index(drop=True)
+    )
 
 
 def choose_winner(grid_results):
     top_auc = grid_results.iloc[0]["validation_auc"]
     close = grid_results[grid_results["validation_auc"] >= top_auc - 0.01]
-    return close.sort_values(
-        ["gap", "validation_auc"], ascending=[True, False]
-    ).iloc[0]
+    return close.sort_values(["gap", "validation_auc"], ascending=[True, False]).iloc[0]
 
 
 def cv_compare(df, winner_params):
