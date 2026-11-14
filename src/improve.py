@@ -17,13 +17,13 @@ from src.model import (
 GRID = {
     "max_depth": [2, 3, 4],
     "learning_rate": [0.05, 0.1],
-    "scale_pos_weight": [1, 3.6],
 }
 FIXED = {
     "n_estimators": 300,
     "min_child_weight": 5,
-    "subsample": 0.8,
-    "colsample_bytree": 0.8,
+    "subsample": 1.0,
+    "colsample_bytree": 1.0,
+    "scale_pos_weight": 1,
 }
 
 
@@ -33,15 +33,13 @@ def extreme_share(scores):
 
 def run_grid(X_fit, X_val, y_fit, y_val):
     rows = []
-    for depth, learning_rate, pos_weight in product(
+    for depth, learning_rate in product(
         GRID["max_depth"],
         GRID["learning_rate"],
-        GRID["scale_pos_weight"],
     ):
         params = {
             "max_depth": depth,
             "learning_rate": learning_rate,
-            "scale_pos_weight": pos_weight,
         }
         model = build_xgb_pipeline(**FIXED, **params)
         model.fit(X_fit, y_fit)
@@ -122,7 +120,6 @@ def main():
     winner_params = {
         "max_depth": int(winner["max_depth"]),
         "learning_rate": float(winner["learning_rate"]),
-        "scale_pos_weight": float(winner["scale_pos_weight"]),
     }
     if winner["validation_auc"] == grid_results.iloc[0]["validation_auc"]:
         reason = "highest validation AUC"

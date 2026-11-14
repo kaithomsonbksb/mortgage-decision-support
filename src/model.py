@@ -45,8 +45,8 @@ METRICS = ("accuracy", "precision_1", "recall_1", "f1_1", "roc_auc")
 FINAL_XGB_PARAMS = {
     "n_estimators": 300,
     "min_child_weight": 5,
-    "subsample": 0.8,
-    "colsample_bytree": 0.8,
+    "subsample": 1.0,
+    "colsample_bytree": 1.0,
     "max_depth": 2,
     "learning_rate": 0.05,
     "scale_pos_weight": 1,
