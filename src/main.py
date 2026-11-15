@@ -1,7 +1,4 @@
-"""Compare the supplied models; assessed advisory rules are NOT provided."""
-
 from pathlib import Path
-
 import joblib
 import matplotlib.pyplot as plt
 import pandas as pd

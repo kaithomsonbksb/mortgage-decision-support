@@ -1,31 +1,79 @@
-# Mortgage decision-support starter · DN6MD001 Assignment 2
+# Mortgage Credit-Risk Decision Support
 
-This is a **working, deliberately limited tutor-provided ML baseline**; it is **not a finished Assignment 2 solution**. Read `../START_HERE.md`, `../CODE_WALKTHROUGH.md`, `../DATA_DICTIONARY.md` and the approved brief in the parent folder.
+A decision-support prototype for DN6MD001 Assignment 2, using synthetic mortgage applicant data to estimate repayment risk.
+It combines a model score with advisory rules to suggest a review level for a human reviewer. It never approves or declines applications.
 
-## Quick start (Windows PowerShell from this folder)
+## Requirements
+
+Use Python 3.13 and create a fresh virtual environment. Dependency versions are pinned in `requirements.txt`.
+On macOS, install XGBoost's OpenMP dependency first: `brew install libomp`.
+
+## Setup and run
+
+Run these commands in order from the project folder.
+
+### Windows (PowerShell)
 
 ```powershell
-py -m venv .venv
+py -3.13 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 .\.venv\Scripts\python.exe -m src.data
+.\.venv\Scripts\python.exe -m src.evaluate
+.\.venv\Scripts\python.exe -m src.improve
 .\.venv\Scripts\python.exe -m src.main
 .\.venv\Scripts\python.exe -m src.applicant_example
 .\.venv\Scripts\python.exe -m unittest discover -s tests -v
 ```
 
-The supplied dataset is already in `data/A2 Mortgage Credit Risk Dataset.csv`. The program uses only **synthetic data**. Do not use real applicant details.
+### macOS / Linux
 
-### What is working?
-- Data audit (`src/data.py`)
-- A basic two-feature Logistic Regression pipeline with training-only imputation/scaling, a majority-class reference and initial held-out evaluation (`src/model.py`, `src/main.py`)
-- Saved model and sample applicant **scoring** (not decision-making) (`src/applicant_example.py`)
-- Four generic validation tests (`tests/test_validation.py`)
+```bash
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+.venv/bin/python -m src.data
+.venv/bin/python -m src.evaluate
+.venv/bin/python -m src.improve
+.venv/bin/python -m src.main
+.venv/bin/python -m src.applicant_example
+.venv/bin/python -m unittest discover -s tests -v
+```
 
-### What is your independent assignment work?
+Run `src.main` before `src.applicant_example`; it saves the model used by the examples.
 
-Develop, justify and test your own logical decision rules and their integration with the model; make evidence-informed modelling/evaluation decisions, carry out meaningful improvement and retesting, document decisions and sources, and maintain Git/GitHub version history. The intentionally incomplete `advisory_decision()` in `src/decisions.py` is not an error in the supplied training/scoring example.
+## What the commands produce
 
-**Data note:** The synthetic dataset is supplied in the DN6MD001 assignment pack and is included in this repository at `data/A2 Mortgage Credit Risk Dataset.csv`. It contains synthetic data only
-**Academic integrity:** Acknowledge module-provided code and any permitted AI assistance under the approved brief. Keep the final report and project evidence consistent.
+- `src.data`: data audit.
+- `src.evaluate`: validation results, a threshold sweep, and charts.
+- `src.improve`: parameter grid, cross-validation comparison, and improved-model sweep.
+- `src.main`: model test results, a confusion matrix, and the advisory-system summary.
+- `src.applicant_example`: example scores and advisory outcomes.
+- `unittest`: 21 tests.
 
-**AI-assisted comments:** All comments placed beneath variable declarations in this repository were generated with AI to improve code readability.
+## Project structure
+
+- `src/data.py` — loads the dataset and prints its core audit.
+- `src/audit.py` — reports summary statistics and missing-data patterns.
+- `src/model.py` — builds, trains, and evaluates the model pipelines.
+- `src/evaluate.py` — evaluates a validation set and plots a threshold sweep.
+- `src/improve.py` — compares XGBoost settings and evaluates an improved model.
+- `src/decisions.py` — validates applications and applies advisory review rules.
+- `src/main.py` — runs the model comparisons and advisory-system evaluation.
+- `src/applicant_example.py` — scores sample applications and prints advisory outcomes.
+- `tests/` — 21 tests covering decision rules, validation, and boundaries.
+- `requirements.txt` — pinned dependency versions.
+
+## Reproducibility
+
+Package versions are pinned. The regularised model uses no random row or column sampling (`subsample` and `colsample_bytree` are set to 1.0) and a fixed seed of 42. Results are identical across the tested Windows, macOS, and Linux setups.
+
+## Data note
+
+The synthetic dataset is supplied in the DN6MD001 assignment pack and is included in this repository at `data/A2 Mortgage Credit Risk Dataset.csv`.
+
+## Module-supplied code
+
+The module supplied the starter Logistic Regression benchmark, data loading, `validate_application_fields`, `validate_score`, and four original tests in `test_validation.py`. The remaining implementation and tests are my work.
+
+## AI use
+
+GitHub Copilot helped with code suggestions, autocomplete and debugging. I reviewed and tested the code. Claude assisted with planning, review and checking results. 
