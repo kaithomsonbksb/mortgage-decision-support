@@ -30,7 +30,7 @@ EXAMPLE_APPLICATIONS = {
     "Clean application": BASE_APPLICATION,
     "High-LTV application": {
         **BASE_APPLICATION,
-        "loan_to_value_pct": 95.0,
+        "loan_to_value_pct": 92.0,
     },
     "Adverse-credit application": {
         **BASE_APPLICATION,
