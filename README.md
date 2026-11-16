@@ -38,7 +38,7 @@ python3 -m venv .venv
 .venv/bin/python -m unittest discover -s tests -v
 ```
 
-Run `src.main` before `src.applicant_example`; it saves the model used by the examples.
+Run `src.main` before `src.applicant_example`. This saves the model used by the examples.
 
 ## What the commands produce
 
@@ -51,16 +51,16 @@ Run `src.main` before `src.applicant_example`; it saves the model used by the ex
 
 ## Project structure
 
-- `src/data.py` — loads the dataset and prints its core audit.
-- `src/audit.py` — reports summary statistics and missing-data patterns.
-- `src/model.py` — builds, trains, and evaluates the model pipelines.
-- `src/evaluate.py` — evaluates a validation set and plots a threshold sweep.
-- `src/improve.py` — compares XGBoost settings and evaluates an improved model.
-- `src/decisions.py` — validates applications and applies advisory review rules.
-- `src/main.py` — runs the model comparisons and advisory-system evaluation.
-- `src/applicant_example.py` — scores sample applications and prints advisory outcomes.
-- `tests/` — 21 tests covering decision rules, validation, and boundaries.
-- `requirements.txt` — pinned dependency versions.
+- `src/data.py` - loads the dataset and prints its core audit.
+- `src/audit.py` - reports summary statistics and missing-data patterns.
+- `src/model.py` - builds, trains, and evaluates the model pipelines.
+- `src/evaluate.py` - evaluates a validation set and plots a threshold sweep.
+- `src/improve.py` - compares XGBoost settings and evaluates an improved model.
+- `src/decisions.py` - validates applications and applies advisory review rules.
+- `src/main.py` - runs the model comparisons and advisory-system evaluation.
+- `src/applicant_example.py` - scores sample applications and prints advisory outcomes.
+- `tests/` - 21 tests covering decision rules, validation, and boundaries.
+- `requirements.txt` - pinned dependency versions.
 
 ## Reproducibility
 
@@ -76,4 +76,5 @@ The module supplied the starter Logistic Regression benchmark, data loading, `va
 
 ## AI use
 
-GitHub Copilot helped with code suggestions, autocomplete and debugging. I reviewed and tested the code. Claude assisted with planning, review and checking results. 
+GitHub Copilot helped with code suggestions, autocomplete and debugging. I reviewed and tested the code. Claude assisted with planning, review and checking results.
+GitHub Copilot was also used to aid documentation and notes for code readability.  
